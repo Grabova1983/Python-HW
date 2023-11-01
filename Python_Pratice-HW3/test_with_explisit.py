@@ -1,55 +1,34 @@
-import pytest
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from data import START_PAGE
+from locators import TITLE, START_TEST_BUTTON, LOGIN, PASSWORD, CHECKBOX_AGREE, REGISTER_BUTTON, LOADER, SUCCESS_MESSAGE
 
 
-@pytest.fixture
-def chrome_options():
-    options = Options()
-    options.add_argument('--window-size=100,400')
-    return options
+def test_loading_website(driver, wait, fake_email):
+    driver.get(START_PAGE)
+    title = wait.until(EC.visibility_of_element_located(TITLE))
+    assert title.text == 'Практика с ожиданиями в Selenium'
 
-
-@pytest.fixture
-def driver(chrome_options):
-    driver = webdriver.Chrome(options=chrome_options)
-    yield driver
-    driver.quit()
-
-
-@pytest.fixture
-def wait(driver):
-    wait = WebDriverWait(driver, timeout=10)
-    return wait
-
-
-def test_loading_website(driver, wait):
-    driver.get('https://victoretc.github.io/selenium_waits/')
-    wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'body > h1')))
-
-    wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#startTest')))
-
-    test_button = driver.find_element(By.CSS_SELECTOR, '#startTest')
+    test_button = wait.until(EC.element_to_be_clickable(START_TEST_BUTTON))
     test_button.click()
 
-    login_input = driver.find_element(By.CSS_SELECTOR, '#login')
-    login_input.send_keys("Maria")
+    login_input = wait.until(EC.visibility_of_element_located(LOGIN))
+    login_input.clear()
+    login_input.send_keys(fake_email)
 
-    password_input = driver.find_element(By.CSS_SELECTOR, '#password')
-    password_input.send_keys("ssss")
+    password_input = wait.until(EC.visibility_of_element_located(PASSWORD))
+    password_input.clear()
+    password_input.send_keys(fake_email)
 
-    driver.find_element(By.CSS_SELECTOR, '#agree').click()
+    checkbox = wait.until(EC.visibility_of_element_located(CHECKBOX_AGREE))
+    checkbox.click()
+    assert checkbox.is_selected() == True
 
-    driver.find_element(By.CSS_SELECTOR, '#register').click()
+    register_button = wait.until(EC.visibility_of_element_located(REGISTER_BUTTON))
+    register_button.click()
 
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#loader')))
+    wait.until(EC.visibility_of_element_located(LOADER))
 
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#successMessage')))
-
-    success_message = driver.find_element(By.CSS_SELECTOR, '#successMessage')
+    success_message = wait.until(EC.visibility_of_element_located(SUCCESS_MESSAGE))
 
     assert success_message.text == 'Вы успешно зарегистрированы!'
 
